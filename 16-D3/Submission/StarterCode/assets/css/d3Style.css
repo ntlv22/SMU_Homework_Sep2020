@@ -6,7 +6,7 @@
 
 .active {
     font-weight: bold;
-    fill: #000;
+    fill: rgb(13, 141, 71);
     transition: fill 0.3s ease-out;
     text-anchor: middle;
 }
@@ -34,8 +34,8 @@
 }
 
 .stateCircle {
-    fill: #89bdd3;
-    stroke: #e3e3e3;
+    fill: #cb6bd8;
+    stroke: #09691e;
 }
 
 .chart {

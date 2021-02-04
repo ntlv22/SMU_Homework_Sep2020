@@ -1,5 +1,7 @@
-//gobal
+// global
 var chosen_xaxis = "poverty";
+var chosen_yaxis = "healthcare";
+
 
 // @TODO: YOUR CODE HERE!
 $(document).ready(function() {
@@ -19,14 +21,14 @@ function makePlot() {
         $("#scatter").empty();
 
         // var svgWidth = 960;
-        var svgWidth = window.innerWidth;
-        var svgHeight = 500;
+        var svgWidth = window.innerWidth - 40;
+        var svgHeight = 800;
 
         var margin = {
             top: 20,
             right: 40,
             bottom: 100,
-            left: 50
+            left: 80
         };
 
         var chart_width = svgWidth - margin.left - margin.right;
@@ -49,14 +51,13 @@ function makePlot() {
             row.healthcare = +row.healthcare;
             row.age = +row.age;
             row.income = +row.income;
+            row.obesity = +row.obesity;
+            row.smokes = +row.smokes;
         });
 
         // STEP 4: Create the Scales
         var xScale = createXScale(census_data, chart_width);
-
-        var yScale = d3.scaleLinear()
-            .domain(d3.extent(census_data, d => d.healthcare))
-            .range([chart_height, 0]);
+        var yScale = createYScale(census_data, chart_height);
 
         // STEP 5: CREATE THE AXES
         var leftAxis = d3.axisLeft(yScale);
@@ -77,8 +78,6 @@ function makePlot() {
             .append("text")
             .text(d => d.abbr)
             .attr("alignment-baseline", "central")
-            // .attr("x", d => xScale(d.poverty))
-            // .attr("y", d => yScale(d.healthcare))
             .attr("font-size", 12)
             .classed("stateText", true);
 
@@ -90,30 +89,127 @@ function makePlot() {
             .enter()
             .append("circle")
             .attr("cx", d => xScale(d[chosen_xaxis]))
-            .attr("cy", d => yScale(d.healthcare))
+            .attr("cy", d => yScale(d[chosen_yaxis]))
             .attr("r", "15")
             .style("opacity", 0.25)
-            .attr("fill", "blue")
-            .attr("stroke", "black")
             .attr("stroke-width", "1")
             .classed("stateCircle", true);
 
 
         chartGroup.selectAll(".stateText")
             .attr("x", d => xScale(d[chosen_xaxis]))
-            .attr("y", d => yScale(d.healthcare))
+            .attr("y", d => yScale(d[chosen_yaxis]))
+
 
         // STEP 7: Add Axes Labels
         // Create axes labels
+
+        // CREATE 1st YAXIS TEXT
         chartGroup.append("text")
             .attr("transform", "rotate(-90)")
             .attr("y", 0 - margin.left + 0)
             .attr("x", 0 - (chart_height / 2))
             .attr("dy", "1em")
-            .attr("class", "axisText")
-            .text("Lacks Healthcare %");
+            .attr("class", "axisText active")
+            .attr("id", "healthcare")
+            .text("Lacks Healthcare (%)")
+            .style("cursor", "pointer")
+            .on("click", function() {
+                chosen_yaxis = "healthcare";
 
-        // Create 1st X axis
+                // update the y scale
+                yScale = createYScale(census_data, chart_height);
+
+                //update the y axis
+                leftAxis = d3.axisLeft(yScale);
+                yAxis = createYAxis(yAxis, leftAxis);
+
+                // update the GROUPS that we have on the graph
+                circlesGroup = updateCircles(circlesGroup, xScale, yScale);
+                textGroup = updateText(textGroup, xScale, yScale);
+
+                circlesGroup = createTooltip(circlesGroup);
+
+                d3.select(this).classed("inactive", false);
+                d3.select(this).classed("active", true);
+
+                d3.select("#smokes").classed("active", false);
+                d3.select("#smokes").classed("inactive", true);
+                d3.select("#obesity").classed("active", false);
+                d3.select("#obesity").classed("inactive", true);
+            });
+
+        // CREATE 2nd YAXIS TEXT
+        chartGroup.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0 - margin.left + 20)
+            .attr("x", 0 - (chart_height / 2))
+            .attr("dy", "1em")
+            .attr("class", "axisText inactive")
+            .attr("id", "smokes")
+            .text("Smoke (%)")
+            .style("cursor", "pointer")
+            .on("click", function() {
+                chosen_yaxis = "smokes";
+
+                // update the y scale
+                yScale = createYScale(census_data, chart_height);
+
+                //update the y axis
+                leftAxis = d3.axisLeft(yScale);
+                yAxis = createYAxis(yAxis, leftAxis);
+
+                // update the GROUPS that we have on the graph
+                circlesGroup = updateCircles(circlesGroup, xScale, yScale);
+                textGroup = updateText(textGroup, xScale, yScale);
+
+                circlesGroup = createTooltip(circlesGroup);
+
+                d3.select(this).classed("inactive", false);
+                d3.select(this).classed("active", true);
+
+                d3.select("#healthcare").classed("active", false);
+                d3.select("#healthcare").classed("inactive", true);
+                d3.select("#obesity").classed("active", false);
+                d3.select("#obesity").classed("inactive", true);
+            });
+
+        // CREATE 3rd YAXIS TEXT
+        chartGroup.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0 - margin.left + 40)
+            .attr("x", 0 - (chart_height / 2))
+            .attr("dy", "1em")
+            .attr("class", "axisText inactive")
+            .attr("id", "obesity")
+            .text("Obesity (%)")
+            .style("cursor", "pointer")
+            .on("click", function() {
+                chosen_yaxis = "obesity";
+
+                // update the y scale
+                yScale = createYScale(census_data, chart_height);
+
+                //update the y axis
+                leftAxis = d3.axisLeft(yScale);
+                yAxis = createYAxis(yAxis, leftAxis);
+
+                // update the GROUPS that we have on the graph
+                circlesGroup = updateCircles(circlesGroup, xScale, yScale);
+                textGroup = updateText(textGroup, xScale, yScale);
+
+                circlesGroup = createTooltip(circlesGroup);
+
+                d3.select(this).classed("inactive", false);
+                d3.select(this).classed("active", true);
+
+                d3.select("#smokes").classed("active", false);
+                d3.select("#smokes").classed("inactive", true);
+                d3.select("#healthcare").classed("active", false);
+                d3.select("#healthcare").classed("inactive", true);
+            });
+
+        // CREATE 1st XAXIS TEXT
         chartGroup.append("text")
             .attr("transform", `translate(${chart_width / 2}, ${chart_height + margin.top + 30})`)
             .attr("class", "axisText active")
@@ -130,11 +226,9 @@ function makePlot() {
                 bottomAxis = d3.axisBottom(xScale);
                 xAxis = createXAxis(xAxis, bottomAxis);
 
-                // update the circles and text
-                circlesGroup = updateCircles(circlesGroup, xScale);
-                textGroup = updateText(textGroup, xScale);
-
-
+                // update the GROUPS that we have on the graph
+                circlesGroup = updateCircles(circlesGroup, xScale, yScale);
+                textGroup = updateText(textGroup, xScale, yScale);
 
                 circlesGroup = createTooltip(circlesGroup);
 
@@ -143,12 +237,12 @@ function makePlot() {
 
                 d3.select("#age").classed("active", false);
                 d3.select("#age").classed("inactive", true);
-
                 d3.select("#income").classed("active", false);
                 d3.select("#income").classed("inactive", true);
             });
 
-        // Create 2nd X axis
+
+        // CREATE 2nd XAXIS TEXT
         chartGroup.append("text")
             .attr("transform", `translate(${chart_width / 2}, ${chart_height + margin.top + 50})`)
             .attr("class", "axisText inactive")
@@ -165,11 +259,9 @@ function makePlot() {
                 bottomAxis = d3.axisBottom(xScale);
                 xAxis = createXAxis(xAxis, bottomAxis);
 
-                // update the circles and text
-                circlesGroup = updateCircles(circlesGroup, xScale);
-                textGroup = updateText(textGroup, xScale);
-
-
+                // update the GROUPS that we have on the graph
+                circlesGroup = updateCircles(circlesGroup, xScale, yScale);
+                textGroup = updateText(textGroup, xScale, yScale);
 
                 circlesGroup = createTooltip(circlesGroup);
 
@@ -178,12 +270,11 @@ function makePlot() {
 
                 d3.select("#poverty").classed("active", false);
                 d3.select("#poverty").classed("inactive", true);
-
                 d3.select("#income").classed("active", false);
                 d3.select("#income").classed("inactive", true);
             });
 
-        // Create 3rd X axis
+        // CREATE 3rd XAXIS TEXT
         chartGroup.append("text")
             .attr("transform", `translate(${chart_width / 2}, ${chart_height + margin.top + 70})`)
             .attr("class", "axisText inactive")
@@ -200,11 +291,9 @@ function makePlot() {
                 bottomAxis = d3.axisBottom(xScale);
                 xAxis = createXAxis(xAxis, bottomAxis);
 
-                // update the circles and text
-                circlesGroup = updateCircles(circlesGroup, xScale);
-                textGroup = updateText(textGroup, xScale);
-
-
+                // update the GROUPS that we have on the graph
+                circlesGroup = updateCircles(circlesGroup, xScale, yScale);
+                textGroup = updateText(textGroup, xScale, yScale);
 
                 circlesGroup = createTooltip(circlesGroup);
 
@@ -213,14 +302,13 @@ function makePlot() {
 
                 d3.select("#poverty").classed("active", false);
                 d3.select("#poverty").classed("inactive", true);
-
                 d3.select("#age").classed("active", false);
                 d3.select("#age").classed("inactive", true);
             });
 
-        // STEP 8: TOOLTIP
-        circlesGroup = createTooltip(circlesGroup)
 
+        // STEP 8: TOOLTIP
+        circlesGroup = createTooltip(circlesGroup);
 
 
     }).catch(function(error) {
@@ -228,7 +316,9 @@ function makePlot() {
     });
 }
 
-// create x axis scale 
+/////////////////////////////////////////////////////
+
+// create x axis scale based on chosen column
 function createXScale(census_data, chart_width) {
     var xScale = d3.scaleLinear()
         .domain(d3.extent(census_data, d => d[chosen_xaxis]))
@@ -237,7 +327,16 @@ function createXScale(census_data, chart_width) {
     return xScale;
 }
 
-// Transition X axis to new one
+// create y axis scale based on chosen column
+function createYScale(census_data, chart_height) {
+    var yScale = d3.scaleLinear()
+        .domain(d3.extent(census_data, d => d[chosen_yaxis]))
+        .range([chart_height, 0]);
+
+    return yScale;
+}
+
+// transition the xaxis to the NEW chosen one
 function createXAxis(xAxis, bottomAxis) {
     xAxis.transition()
         .duration(1000)
@@ -246,33 +345,51 @@ function createXAxis(xAxis, bottomAxis) {
     return xAxis;
 }
 
-// Update circle group
-function updateCircles(circlesGroup, xScale) {
+// transition the yaxis to the NEW chosen one
+function createYAxis(yAxis, leftAxis) {
+    yAxis.transition()
+        .duration(1000)
+        .call(leftAxis);
+
+    return yAxis;
+}
+
+function updateCircles(circlesGroup, xScale, yScale) {
     circlesGroup.transition()
         .duration(1000)
-        .attr("cx", d => xScale(d[chosen_xaxis]));
+        .attr("cx", d => xScale(d[chosen_xaxis]))
+        .attr("cy", d => yScale(d[chosen_yaxis]));
 
     return circlesGroup;
 }
 
-// Update text group
-function updateText(textGroup, xScale) {
+function updateText(textGroup, xScale, yScale) {
     textGroup.transition()
         .duration(1000)
-        .attr("x", d => xScale(d[chosen_xaxis]));
+        .attr("x", d => xScale(d[chosen_xaxis]))
+        .attr("y", d => yScale(d[chosen_yaxis]));
 
     return textGroup;
 }
 
 function createTooltip(circlesGroup) {
     //step 0, get label
-    var label = "";
+    var xLabel = "";
     if (chosen_xaxis == "poverty") {
-        label = "Poverty"
-    } else if (chosen_xaxis == "age") {
-        label = "Age"
+        xLabel = "Poverty";
+    } else if (chosen_xaxis == "income") {
+        xLabel = "Household Income";
     } else {
-        label = "Income";
+        xLabel = "Age";
+    }
+
+    var yLabel = "";
+    if (chosen_yaxis == "healthcare") {
+        yLabel = "Lacks Healthcare";
+    } else if (chosen_yaxis == "smokes") {
+        yLabel = "Smokes";
+    } else {
+        yLabel = "Obesity";
     }
 
     // Step 1: Initialize Tooltip
@@ -280,7 +397,7 @@ function createTooltip(circlesGroup) {
         .attr("class", "d3-tip")
         .offset([180, -60])
         .html(function(d) {
-            return (`<strong>${d.state}</strong><hr><strong>${label}: ${d[chosen_xaxis]}</strong><hr><strong>Lacks Healthcare: ${d.healthcare}</strong>`);
+            return (`<strong>${d.state}</strong><hr><strong>${xLabel}: ${d[chosen_xaxis]}</strong><hr><strong> ${yLabel}: ${d[chosen_yaxis]}%</strong>`);
         });
 
     // Step 2: Create the tooltip in chartGroup.
@@ -303,7 +420,7 @@ function createTooltip(circlesGroup) {
             d3.select(this)
                 .transition()
                 .duration(1000)
-                .attr("r", 10);
+                .attr("r", 15);
         });
 
     return circlesGroup;
